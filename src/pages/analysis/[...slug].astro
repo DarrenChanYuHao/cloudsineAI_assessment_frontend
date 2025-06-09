@@ -1,0 +1,144 @@
+---
+export const prerender = false;
+
+import type {ScannedAnalysisDTO} from "@/DTO/ScannedAnalysisDTO.ts";
+import type {ScannedFileDTO} from "@/DTO/ScannedFileDTO.ts";
+const { slug } = Astro.params;
+const virus_total_id = Array.isArray(slug) ? slug.join('/') : slug;
+
+// Fetch the analysis data
+let analysisData: ScannedAnalysisDTO | null = null;
+let scannedFile: ScannedFileDTO | null = null;
+let error = null;
+
+try {
+    const response = await fetch(`https://caibackend.darrenchanyuhao.com/scan/analyze?file_id=${virus_total_id}`);
+
+    if (!response.ok) {
+        error = `Error fetching analysis data: ${response.statusText}`;
+    } else {
+        analysisData = await response.json();
+    }
+} catch (e) {
+    error = `Error fetching analysis data: ${e.message}`;
+}
+
+import Layout from '../../layouts/BaseLayout.astro';
+import Footer from "../../components/Footer.astro";
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+---
+
+<Layout content={{ title: "File Analysis" }}>
+    <div class="min-h-svh flex flex-col">
+        <main class="container mx-auto p-8 flex-1">
+            {error && (
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        <p>{error}</p>
+                        <p>Could not load analysis for hash: {virus_total_id}</p>
+                    </div>
+            )}
+
+            {analysisData && (
+                    <div class="grid grid-cols-1 gap-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-2xl font-bold">
+                                    {
+                                        // If stats.malicious and stats.suspicious are both 0 and Status is Completed, show "No Threats Detected"
+                                        analysisData.scan_status !== 'completed' ? `Pending Analysis for ${analysisData.meaningful_name || 'Unknown File'}` :
+                                            analysisData.stats.malicious === 0 && analysisData.stats.suspicious === 0
+                                                ? `Analysis for ${analysisData.meaningful_name}. No Threats Detected.`
+                                                : `Analysis for ${analysisData.meaningful_name || 'Unknown File'}. Threats Detected.`
+                                    }
+                                    </CardTitle>
+                                <CardDescription className="grid grid-cols-4 gap-2">
+                                    <div class="text-muted-foreground col-span-2 truncate">
+                                        <strong>SHA256:</strong> {analysisData.metadata.sha256 || 'N/A'}
+                                            <br />
+                                        <strong>VirusTotal ID:</strong> {analysisData.virus_total_id || 'N/A'}
+                                    </div>
+                                    <div class="text-muted-foreground border-l-2 border-secondary pl-4">
+                                        <strong>File Size:</strong> {(analysisData.size/(1024)).toFixed(2) || 'N/A'} kbytes
+                                            <br />
+                                        <strong>File Type:</strong> {analysisData.type_extension || 'N/A'}
+                                    </div>
+                                    <div class="text-muted-foreground border-l-2 border-secondary pl-4">
+                                        <strong>Last Scanned On:</strong> {new Date(analysisData.last_analysis_date * 1000).toLocaleString()}
+                                    </div>
+                                </CardDescription>
+                            </CardHeader>
+                        </Card>
+                        <Card>
+                            <CardContent>
+                                <p class="text-lg mb-4">
+                                    <strong>Status:</strong> {analysisData.scan_status || 'Unknown'}
+                                </p>
+                                {analysisData.results && Object.entries(analysisData.results).length > 0 ? (
+                                        <div class="mt-4">
+                                            <h2 class="text-xl font-semibold mb-2">Scan Results:</h2>
+                                            <div class="grid grid-cols-2 gap-x-6 gap-y-2">
+                                                {/* Engines WITHOUT results (e.g., no detections) */}
+                                                {/* Engines WITH results (e.g., detections) */}
+                                                {Object.entries(analysisData.results)
+                                                    .filter(([_, result]) => result.result)
+                                                    .sort(([aEngine], [bEngine]) => aEngine.localeCompare(bEngine))
+                                                    .map(([engine, result]) => (
+                                                            <div key={engine} class="text-muted-foreground flex justify-between">
+                                                                <span>{engine}:</span> <span class={`text-right ${result.result && result.result !== 'undetected' ? 'text-destructive' : ''}`}>{result.result}</span>
+                                                            </div>
+                                                    ))}
+
+                                                {/* Engines WITHOUT results but scanned */}
+                                                {Object.entries(analysisData.results)
+                                                    .filter(([_, result]) => !result.result && result.category === 'undetected')
+                                                    .sort(([aEngine], [bEngine]) => aEngine.localeCompare(bEngine))
+                                                    .map(([engine, result]) => (
+                                                            <div key={engine} class="text-muted-foreground flex justify-between">
+                                                                <span>{engine}:</span> <span class="text-right text-emerald-600">{result.category}</span>
+                                                            </div>
+                                                    ))}
+
+                                                {/* Engines that did not scan */}
+                                                {Object.entries(analysisData.results)
+                                                    .filter(([_, result]) => !result.result && result.category !== 'undetected')
+                                                    .sort(([aEngine], [bEngine]) => aEngine.localeCompare(bEngine))
+                                                    .map(([engine, result]) => (
+                                                            <div key={engine} class="text-muted-foreground flex justify-between">
+                                                                <span>{engine}:</span> <span class="text-right text-yellow-600">Not Scanned</span>
+                                                            </div>
+                                                    ))}
+                                            </div>
+                                        </div>
+                                ) : (
+                                        <p class="text-lg mt-4">
+                                            No scan results available.
+                                        </p>
+                                )}
+                            </CardContent>
+                            <CardFooter>
+                                <CardAction className="flex justify-end">
+                                    <a href={`https://www.virustotal.com/gui/file/${analysisData.metadata.sha256}`} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+                                        View on VirusTotal
+                                    </a>
+                                </CardAction>
+                            </CardFooter>
+                        </Card>
+                    </div>
+            )}
+            {!error && !analysisData && (
+                    <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+                        <p>Loading analysis data...</p>
+                    </div>
+            )}
+        </main>
+        <Footer />
+    </div>
+</Layout>
