@@ -34,16 +34,27 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import AnalysisPageTabs from "@/components/ui/AnalysisPageTabs";
+import SearchBar from "@/components/ui/searchbar";
 ---
 
 <Layout content={{ title: "File Analysis" }}>
     <div class="min-h-svh flex flex-col">
         <main class="container mx-auto p-8 flex-1">
+            <SearchBar client:load/>
             {error && (
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                         <p>{error}</p>
                         <p>Could not load analysis for hash: {virus_total_id}</p>
                     </div>
+                    <a href="/" class="w-full flex justify-end">
+                        <Button variant="default" className="mt-4"  client:load>
+                            Go back to scan page
+                        </Button>
+                    </a>
+
             )}
 
             {analysisData && (
@@ -76,61 +87,9 @@ import {
                                 </CardDescription>
                             </CardHeader>
                         </Card>
-                        <Card>
-                            <CardContent>
-                                <p class="text-lg mb-4">
-                                    <strong>Status:</strong> {analysisData.scan_status || 'Unknown'}
-                                </p>
-                                {analysisData.results && Object.entries(analysisData.results).length > 0 ? (
-                                        <div class="mt-4">
-                                            <h2 class="text-xl font-semibold mb-2">Scan Results:</h2>
-                                            <div class="grid grid-cols-2 gap-x-6 gap-y-2">
-                                                {/* Engines WITHOUT results (e.g., no detections) */}
-                                                {/* Engines WITH results (e.g., detections) */}
-                                                {Object.entries(analysisData.results)
-                                                    .filter(([_, result]) => result.result)
-                                                    .sort(([aEngine], [bEngine]) => aEngine.localeCompare(bEngine))
-                                                    .map(([engine, result]) => (
-                                                            <div key={engine} class="text-muted-foreground flex justify-between">
-                                                                <span>{engine}:</span> <span class={`text-right ${result.result && result.result !== 'undetected' ? 'text-destructive' : ''}`}>{result.result}</span>
-                                                            </div>
-                                                    ))}
-
-                                                {/* Engines WITHOUT results but scanned */}
-                                                {Object.entries(analysisData.results)
-                                                    .filter(([_, result]) => !result.result && result.category === 'undetected')
-                                                    .sort(([aEngine], [bEngine]) => aEngine.localeCompare(bEngine))
-                                                    .map(([engine, result]) => (
-                                                            <div key={engine} class="text-muted-foreground flex justify-between">
-                                                                <span>{engine}:</span> <span class="text-right text-emerald-600">{result.category}</span>
-                                                            </div>
-                                                    ))}
-
-                                                {/* Engines that did not scan */}
-                                                {Object.entries(analysisData.results)
-                                                    .filter(([_, result]) => !result.result && result.category !== 'undetected')
-                                                    .sort(([aEngine], [bEngine]) => aEngine.localeCompare(bEngine))
-                                                    .map(([engine, result]) => (
-                                                            <div key={engine} class="text-muted-foreground flex justify-between">
-                                                                <span>{engine}:</span> <span class="text-right text-yellow-600">Not Scanned</span>
-                                                            </div>
-                                                    ))}
-                                            </div>
-                                        </div>
-                                ) : (
-                                        <p class="text-lg mt-4">
-                                            No scan results available.
-                                        </p>
-                                )}
-                            </CardContent>
-                            <CardFooter>
-                                <CardAction className="flex justify-end">
-                                    <a href={`https://www.virustotal.com/gui/file/${analysisData.metadata.sha256}`} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
-                                        View on VirusTotal
-                                    </a>
-                                </CardAction>
-                            </CardFooter>
-                        </Card>
+                        <AnalysisPageTabs
+                            analysisData={analysisData} client:load
+                            />
                     </div>
             )}
             {!error && !analysisData && (
