@@ -1,10 +1,8 @@
 name: Build and Push Astro Frontend to ECR
 
 on:
-  workflow_run:
-    workflows: ["Build and Push Astro Frontend to ECR"]  # Must match name exactly
-    types:
-      - completed
+  push:
+    branches: [master]
   workflow_dispatch:
 
 jobs:
