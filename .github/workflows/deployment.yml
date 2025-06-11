@@ -28,7 +28,7 @@ jobs:
               sudo docker login --username AWS --password-stdin 253340479653.dkr.ecr.ap-southeast-1.amazonaws.com
 
             echo "Pulling latest Docker image from ECR..."
-            sudo docker pull 253340479653.dkr.ecr.ap-southeast-1.amazonaws.com/cloudsine_takehome-frontend:latest
+            sudo docker pull 253340479653.dkr.ecr.ap-southeast-1.amazonaws.com/cloudsine_takehome/frontend:latest
 
             echo "Stopping and removing old container..."
             sudo docker stop cloudsine_frontend || true
@@ -37,5 +37,5 @@ jobs:
             echo "Running new container..."
             sudo docker run -d -p 3000:4321 \
               --name cloudsine_frontend \
-              253340479653.dkr.ecr.ap-southeast-1.amazonaws.com/cloudsine_takehome-frontend:latest
+              253340479653.dkr.ecr.ap-southeast-1.amazonaws.com/cloudsine_takehome/frontend:latest
           EOF
