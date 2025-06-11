@@ -1,24 +1,32 @@
-FROM node:20-alpine
-
-LABEL authors="darrenchanyuhao"
+ARG NODE_VERSION=20.11.0
+FROM node:${NODE_VERSION}-slim as base
 
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
+ENV NODE_ENV="production"
+
+FROM base as build
+
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
+
+COPY --link package-lock.json package.json ./
+
 RUN npm install
 
-# Copy the source code
-COPY . .
+COPY --link . .
 
-# Build the Astro project
 RUN npm run build
+
+FROM base
+
+COPY --from=build /app/node_modules /app/node_modules
+
+COPY --from=build /app/dist /app/dist
 
 ENV PORT=80
 ENV HOST=0.0.0.0
 
-# Start the server by default, this can be overwritten at runtime
 EXPOSE 80
 
-# Start the server
-CMD ["node", "dist/server/entry.mjs"]
+CMD [ "node", "./dist/server/entry.mjs" ]
