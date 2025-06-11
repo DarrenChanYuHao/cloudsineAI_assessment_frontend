@@ -7,6 +7,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import type { ScannedAnalysisDTO } from '@/DTO/ScannedAnalysisDTO.ts';
+import {Badge} from "@/components/ui/badge.tsx";
 
 interface Props {
     analysisData: ScannedAnalysisDTO;
@@ -33,15 +34,15 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
         .sort(([aEngine], [bEngine]) => aEngine.localeCompare(bEngine));
 
     return (
-        <Card>
+        <Card className="pt-0">
             <CardContent>
                 <p className="text-lg mb-4">
-                    <strong>Status:</strong>{' '}
-                    {analysisData.scan_status === 'completed' ? 'Completed' : 'Pending'}
+                    {analysisData.scan_status === 'completed' ?
+                        null
+                        : 'Pending'}
                 </p>
-
                 {entries.length > 0 ? (
-                    <div className="mt-4">
+                    <div>
                         <h2 className="text-xl font-semibold mb-2">Scan Results:</h2>
                         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                             {detectedEngines.map(([engine, result]) => (
@@ -49,16 +50,15 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
                                     key={engine}
                                     className="text-muted-foreground flex justify-between"
                                 >
-                                    <span>{engine}:</span>{' '}
+                                    <span>{engine}</span>{' '}
                                     <span
                                         className={`text-right ${
                                             result.result && result.result !== 'undetected'
                                                 ? 'text-destructive'
                                                 : ''
-                                        }`}
-                                    >
-                    {result.result}
-                  </span>
+                                        }`}>
+                                        {result.result}
+                                    </span>
                                 </div>
                             ))}
 
@@ -67,7 +67,7 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
                                     key={engine}
                                     className="text-muted-foreground flex justify-between"
                                 >
-                                    <span>{engine}:</span>{' '}
+                                    <span>{engine}</span>{' '}
                                     <span className="text-right text-emerald-600">Undetected</span>
                                 </div>
                             ))}
@@ -77,7 +77,7 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
                                     key={engine}
                                     className="text-muted-foreground flex justify-between"
                                 >
-                                    <span>{engine}:</span>{' '}
+                                    <span>{engine}</span>{' '}
                                     <span className="text-right text-yellow-600">Not Scanned</span>
                                 </div>
                             ))}

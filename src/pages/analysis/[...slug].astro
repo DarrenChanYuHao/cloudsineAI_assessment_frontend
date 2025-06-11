@@ -1,4 +1,5 @@
 ---
+import RefreshButton from "../../components/ui/RefreshButton";
 export const prerender = false;
 
 import type {ScannedAnalysisDTO} from "@/DTO/ScannedAnalysisDTO.ts";
@@ -38,6 +39,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AnalysisPageTabs from "@/components/ui/AnalysisPageTabs";
 import SearchBar from "@/components/ui/searchbar";
+import { Badge } from "@/components/ui/badge"
+import UploadButton from "@/components/ui/UploadButton";
 ---
 
 <Layout content={{ title: "File Analysis" }}>
@@ -61,15 +64,30 @@ import SearchBar from "@/components/ui/searchbar";
                     <div class="grid grid-cols-1 gap-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-2xl font-bold">
-                                    {
-                                        // If stats.malicious and stats.suspicious are both 0 and Status is Completed, show "No Threats Detected"
-                                        analysisData.scan_status !== 'completed' ? `Pending Analysis for ${analysisData.meaningful_name || 'Unknown File'}` :
-                                            analysisData.stats.malicious === 0 && analysisData.stats.suspicious === 0
-                                                ? `Analysis for ${analysisData.meaningful_name}. No Threats Detected.`
-                                                : `Analysis for ${analysisData.meaningful_name || 'Unknown File'}. Threats Detected.`
-                                    }
-                                    </CardTitle>
+                                <CardTitle className="text-2xl font-bold flex items-center justify-between">
+                                    <div id="analysis-header" class="flex items-center space-x-2">
+                                        <div class="flex items-center">
+                                            {
+                                                analysisData.scan_status !== 'completed'
+                                                    ? 'File is being scanned...'
+                                                    : `Analysis for ${analysisData.meaningful_name}.`
+                                            }
+                                        </div>
+                                        <div class="flex items-center">
+                                            {
+                                                analysisData.scan_status === 'completed'
+                                                    ? (analysisData.stats.malicious === 0 && analysisData.stats.suspicious === 0
+                                                        ? <Badge variant="default" className="bg-emerald-600 text-sm">Safe</Badge>
+                                                        : <Badge variant="destructive">DANGEROUS FILE</Badge>)
+                                                    : null
+                                            }
+                                        </div>
+                                        <div class="flex items-center">
+                                            <RefreshButton client:load />
+                                        </div>
+                                    </div>
+                                </CardTitle>
+
                                 <CardDescription className="grid grid-cols-4 gap-2">
                                     <div class="text-muted-foreground col-span-2 truncate">
                                         <strong>SHA256:</strong> {analysisData.metadata.sha256 || 'N/A'}
