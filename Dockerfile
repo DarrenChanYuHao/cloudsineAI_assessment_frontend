@@ -15,7 +15,7 @@ COPY . .
 RUN npm run build
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 4321
 
 # Start the server
 CMD ["node", "dist/server/entry.mjs"]
