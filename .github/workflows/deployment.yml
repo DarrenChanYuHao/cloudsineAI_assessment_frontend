@@ -1,0 +1,37 @@
+name: Deploy Astro Frontend to EC2
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout frontend repo
+        uses: actions/checkout@v3
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /home/ubuntu/cloudsineAI_assessment_frontend
+            git pull origin
+
+            echo "Stopping old container..."
+            sudo docker stop cloudsine_frontend || true
+            sudo docker rm cloudsine_frontend || true
+
+            echo "Building Astro frontend Docker image..."
+            sudo docker build -t cloudsine_frontend .
+
+            echo "Running new container..."
+            sudo docker run -d -p 3000:4321 --name cloudsine_frontend cloudsine_frontend
+          EOF
