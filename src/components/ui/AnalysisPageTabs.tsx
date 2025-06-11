@@ -20,10 +20,9 @@ const AnalysisPageTabs: React.FC<Props> = ({ analysisData }) => {
 
     return (
         <Tabs defaultValue="virustotal" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 gap-4">
-                <TabsTrigger value="virustotal">VirusTotal</TabsTrigger>
-                <TabsTrigger value="genai">GenAI Analysis</TabsTrigger>
-                <TabsTrigger value="other">Other Analysis</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 gap-4">
+                <TabsTrigger value="virustotal" className="font-semibold cursor-pointer">VirusTotal</TabsTrigger>
+                <TabsTrigger value="genai" className="font-semibold cursor-pointer">GenAI Analysis</TabsTrigger>
             </TabsList>
             <TabsContent value="virustotal">
                 <VirusTotalResults analysisData={analysisData} />
@@ -38,11 +37,6 @@ const AnalysisPageTabs: React.FC<Props> = ({ analysisData }) => {
                     error={error}
                     setError={setError}
                 />
-            </TabsContent>
-            <TabsContent value="other">
-                <p className="text-muted-foreground text-center p-4">
-                    Other analysis features will be added soon.
-                </p>
             </TabsContent>
         </Tabs>
     );

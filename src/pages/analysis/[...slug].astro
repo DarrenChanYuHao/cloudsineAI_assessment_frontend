@@ -5,7 +5,7 @@ export const prerender = false;
 import type {ScannedAnalysisDTO} from "@/DTO/ScannedAnalysisDTO.ts";
 import type {ScannedFileDTO} from "@/DTO/ScannedFileDTO.ts";
 const { slug } = Astro.params;
-const virus_total_id = Array.isArray(slug) ? slug.join('/') : slug;
+const virus_total_id = Array.isArray(slug) ? slug.join('/') : slug || '';
 
 // Fetch the analysis data
 let analysisData: ScannedAnalysisDTO | null = null;
@@ -13,7 +13,16 @@ let scannedFile: ScannedFileDTO | null = null;
 let error = null;
 
 try {
-    const response = await fetch(`https://caibackend.darrenchanyuhao.com/scan/analyze?file_id=${virus_total_id}`);
+    // if virus_total_id is alphanumeric, fetch by hash
+    let response: Response;
+    if(/^[a-zA-Z0-9]+$/.test(virus_total_id)){
+        response = await fetch(`https://caibackend.darrenchanyuhao.com/scan/analyze?file_id=${virus_total_id}&is_hash=true`);
+    }
+    else{
+        // if virus_total_id is not alphanumeric, fetch by id
+        response = await fetch(`https://caibackend.darrenchanyuhao.com/scan/analyze?file_id=${virus_total_id}&is_hash=false`);
+    }
+
 
     if (!response.ok) {
         error = `Error fetching analysis data: ${response.statusText}`;
@@ -64,8 +73,8 @@ import UploadButton from "@/components/ui/UploadButton";
                     <div class="grid grid-cols-1 gap-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-2xl font-bold flex items-center justify-between">
-                                    <div id="analysis-header" class="flex items-center space-x-2">
+                                <CardTitle className="text-lg md:text-2xl font-bold flex items-center justify-between">
+                                    <div id="analysis-header" class="flex not-md:flex-col md:items-center space-x-2">
                                         <div class="flex items-center">
                                             {
                                                 analysisData.scan_status !== 'completed'
@@ -81,26 +90,26 @@ import UploadButton from "@/components/ui/UploadButton";
                                                         : <Badge variant="destructive">DANGEROUS FILE</Badge>)
                                                     : null
                                             }
+                                            <RefreshButton client:load />
                                         </div>
                                         <div class="flex items-center">
-                                            <RefreshButton client:load />
                                         </div>
                                     </div>
                                 </CardTitle>
 
-                                <CardDescription className="grid grid-cols-4 gap-2">
-                                    <div class="text-muted-foreground col-span-2 truncate">
+                                <CardDescription className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                    <div class="text-muted-foreground md:col-span-2 truncate">
                                         <strong>SHA256:</strong> {analysisData.metadata.sha256 || 'N/A'}
                                             <br />
                                         <strong>VirusTotal ID:</strong> {analysisData.virus_total_id || 'N/A'}
                                     </div>
-                                    <div class="text-muted-foreground border-l-2 border-secondary pl-4">
+                                    <div class="text-muted-foreground md:border-l-2 border-secondary md:pl-4">
                                         <strong>File Size:</strong> {(analysisData.size/(1024)).toFixed(2) || 'N/A'} kbytes
                                             <br />
                                         <strong>File Type:</strong> {analysisData.type_extension || 'N/A'}
                                     </div>
-                                    <div class="text-muted-foreground border-l-2 border-secondary pl-4">
-                                        <strong>Last Scanned On:</strong> {new Date(analysisData.last_analysis_date * 1000).toLocaleString()}
+                                    <div class="text-muted-foreground md:border-l-2 border-secondary md:pl-4">
+                                        <strong>Last Scanned On:</strong> {new Date(analysisData.last_analysis_date).toLocaleString()}
                                     </div>
                                 </CardDescription>
                             </CardHeader>

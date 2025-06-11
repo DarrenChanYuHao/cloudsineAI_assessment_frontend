@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card';
 import type { ScannedAnalysisDTO } from '@/DTO/ScannedAnalysisDTO.ts';
 import {Badge} from "@/components/ui/badge.tsx";
+import { Button } from '@/components/ui/button.tsx';
 
 interface Props {
     analysisData: ScannedAnalysisDTO;
@@ -36,29 +37,29 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
     return (
         <Card className="pt-0">
             <CardContent>
-                <p className="text-lg mb-4">
+                <p className="text-xl mb-4 pt-4 font-semibold">
                     {analysisData.scan_status === 'completed' ?
                         null
-                        : 'Pending'}
+                        : analysisData.results ? 'Showing Old Results...' : 'Pending Analysis'}
                 </p>
                 {entries.length > 0 ? (
                     <div>
                         <h2 className="text-xl font-semibold mb-2">Scan Results:</h2>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                             {detectedEngines.map(([engine, result]) => (
                                 <div
                                     key={engine}
-                                    className="text-muted-foreground flex justify-between"
+                                    className="text-muted-foreground flex justify-between items-start gap-2"
                                 >
-                                    <span>{engine}</span>{' '}
-                                    <span
-                                        className={`text-right ${
-                                            result.result && result.result !== 'undetected'
-                                                ? 'text-destructive'
-                                                : ''
-                                        }`}>
-                                        {result.result}
-                                    </span>
+                                    <span className="text-sm">{engine}</span>
+                                    <Badge
+                                        variant="default"
+                                        className="destructive font-semibold max-w-1/2">
+                                        <div className="truncate">
+                                            {result.result}
+                                        </div>
+                                    </Badge>
+
                                 </div>
                             ))}
 
@@ -68,7 +69,9 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
                                     className="text-muted-foreground flex justify-between"
                                 >
                                     <span>{engine}</span>{' '}
-                                    <span className="text-right text-emerald-600">Undetected</span>
+                                    <Badge variant="default" className="bg-emerald-600 font-semibold">
+                                        No Detections
+                                    </Badge>
                                 </div>
                             ))}
 
@@ -78,7 +81,9 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
                                     className="text-muted-foreground flex justify-between"
                                 >
                                     <span>{engine}</span>{' '}
-                                    <span className="text-right text-yellow-600">Not Scanned</span>
+                                    <Badge variant="default" className="bg-amber-500 font-semibold">
+                                        Not Scanned
+                                    </Badge>
                                 </div>
                             ))}
                         </div>
@@ -91,14 +96,13 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
             <CardFooter>
                 <CardAction className="flex justify-end">
                     <a
-                        href={`https://www.virustotal.com/gui/file/${
-                            analysisData.metadata.sha256 || 'NA'
-                        }`}
+                        href={`https://www.virustotal.com/gui/file/${analysisData.metadata.sha256}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
                     >
-                        View on VirusTotal
+                        <Button variant="default" className="cursor-pointer font-semibold" size="sm">
+                            View on VirusTotal
+                        </Button>
                     </a>
                 </CardAction>
             </CardFooter>

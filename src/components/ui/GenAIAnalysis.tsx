@@ -68,7 +68,7 @@ const GenAIAnalysis: React.FC<GenAIAnalysisProps> = ({
                     <SelectValue placeholder="Theme" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="base">Non-Technical</SelectItem>
+                    <SelectItem value="base">Simple</SelectItem>
                     <SelectItem value="cybersecurity_professional">Professional</SelectItem>
                     <SelectItem value="singaporean_singlish">Singapura</SelectItem>
                 </SelectContent>

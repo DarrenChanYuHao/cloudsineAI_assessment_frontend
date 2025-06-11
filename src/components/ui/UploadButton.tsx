@@ -14,6 +14,14 @@ type Props = {
 const UploadButton: React.FC<Props> = ({ uploadUrl = "https://caibackend.darrenchanyuhao.com/scan/scan_file", buttonText = "Upload File", variant="default"}) => {
     const [isLoading, setIsLoading] = useState(false);
 
+
+    const saveUploadToCache = (fileData: { virus_total_id: string, time: number }) => {
+        const uploads = JSON.parse(localStorage.getItem('recentUploads') || '[]');
+        uploads.unshift(fileData); // Add new
+        const limited = uploads.slice(0, 5); // Keep first 5
+        localStorage.setItem('recentUploads', JSON.stringify(limited));
+    };
+
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -31,7 +39,10 @@ const UploadButton: React.FC<Props> = ({ uploadUrl = "https://caibackend.darrenc
             if (response.status == 200 && response.data.virus_total_id) {
                 // Redirect to the scan result page
                 // alert('File uploaded successfully!');
-                localStorage.setItem("scannedFileData", JSON.stringify(response.data));
+                saveUploadToCache({
+                    virus_total_id: response.data.virus_total_id,
+                    time: Date.now()
+                });
                 window.location.href = `/analysis/${response.data.virus_total_id}`;
             }
             else {
