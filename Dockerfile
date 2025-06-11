@@ -14,7 +14,8 @@ COPY . .
 # Build the Astro project
 RUN npm run build
 
-# Serve with a lightweight server (Astro recommends `@astrojs/node`)
-# You can also use `node` + `server.mjs`, or `npm run preview`
-EXPOSE 4321
-CMD ["npm", "run", "preview"]
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Start the server
+CMD ["node", "dist/server/entry.mjs"]
