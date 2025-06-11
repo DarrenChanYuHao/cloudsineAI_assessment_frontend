@@ -14,8 +14,11 @@ COPY . .
 # Build the Astro project
 RUN npm run build
 
-# Expose the port the app runs on
-EXPOSE 4321
+ENV PORT=80
+ENV HOST=0.0.0.0
+
+# Start the server by default, this can be overwritten at runtime
+EXPOSE 80
 
 # Start the server
 CMD ["node", "dist/server/entry.mjs"]
