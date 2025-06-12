@@ -52,6 +52,7 @@ const UploadButton: React.FC<Props> = ({ uploadUrl = "https://caibackend.darrenc
             }
         } catch (error) {
             console.error('Upload failed:', error);
+            // @ts-ignore
             alert(`File upload failed: ${error instanceof Error ? error.response.data.detail : 'Unknown error'}`);
         }
     };
