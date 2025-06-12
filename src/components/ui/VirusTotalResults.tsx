@@ -40,7 +40,7 @@ const VirusTotalResults: React.FC<Props> = ({ analysisData }) => {
                 <p className="text-xl mb-4 pt-4 font-semibold">
                     {analysisData.scan_status === 'completed' ?
                         null
-                        : analysisData.results ? 'Showing Old Results...' : 'Pending Analysis'}
+                        : analysisData.last_analysis_date == 0 ? 'Pending Analysis' : 'Showing Old Results...'}
                 </p>
                 {entries.length > 0 ? (
                     <div>
